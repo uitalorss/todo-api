@@ -14,7 +14,7 @@ function checksExistsUserAccount(req, res, next) {
   const {username} = req.headers;
   const user = users.find((user) => user.username === username);
   if(!user){
-    return res.status(400).json({message: "Usuário já existente"})
+    return res.status(400).json({message: "Cliente não encontrado."})
   }
   req.user = user;
   next();
@@ -38,7 +38,18 @@ app.get('/todos', checksExistsUserAccount, (req, res) => {
 });
 
 app.post('/todos', checksExistsUserAccount, (req, res) => {
-  // Complete aqui
+  const {user} = req;
+  const { title, deadline } = req.body;
+
+  const newTodo = {
+    id: uuidv4(),
+    title,
+    deadline: new Date(deadline),
+    done: false,
+    created_at: new Date()
+  }
+  user.todo.push(newTodo);
+  return res.status(201).json({message: 'Tarefa cadastrada com sucesso.'})
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
