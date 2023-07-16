@@ -14,10 +14,27 @@ function checksExistsUserAccount(req, res, next) {
   const {username} = req.headers;
   const user = users.find((user) => user.username === username);
   if(!user){
-    return res.status(400).json({message: "Cliente não encontrado."})
+    return res.status(404).json({message: "Cliente não encontrado."})
   }
   req.user = user;
   next();
+}
+
+function checkCreateTodosUserAvailability(req, res, next){
+  const {user} = req;
+  if(user.pro === true || user.todo.length < 10){
+    return next();
+  }else{
+    return res.status(403).json({message: "Usuário incapaz de criar mais tarefas"})
+  }
+}
+
+function checkTodoExists(req, res, next){
+
+}
+
+function findUserById(req, res, next){
+
 }
 
 function validateTitleToBeUpdated(title){
@@ -35,6 +52,7 @@ app.post('/users', (req, res) => {
     id: uuidv4(),
     name,
     username,
+    pro: false,
     todo: []
   }
   if(users.find((user) => user.username === newUser.username)){
@@ -50,7 +68,7 @@ app.get('/todos', checksExistsUserAccount, (req, res) => {
   return res.status(200).json(user.todo);
 });
 
-app.post('/todos', checksExistsUserAccount, (req, res) => {
+app.post('/todos', checksExistsUserAccount, checkCreateTodosUserAvailability, (req, res) => {
   const {user} = req;
   const { title, deadline } = req.body;
 
