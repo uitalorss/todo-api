@@ -57,8 +57,8 @@ app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
   // Complete aqui
 });
 
-app.patch('/todos/done', checksExistsUserAccount, (req, res) => {
-  const {id} = req.headers;
+app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
+  const {id} = req.params;
   const {user} = req;
   let updated = false;
 
