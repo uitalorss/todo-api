@@ -73,7 +73,16 @@ app.patch('/todos/done', checksExistsUserAccount, (req, res) => {
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
-  // Complete aqui
+  const {id} = req.params;
+  const {user} = req;
+
+  const indexTodoToDelete = user.todo.findIndex((todo) => {
+    return todo.id === id
+  })
+
+  user.todo.splice(indexTodoToDelete, 1)
+
+  return res.status(201).json({message: "Tarefa removida com sucesso."})
 });
 
 export default app;
