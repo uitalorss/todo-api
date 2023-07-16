@@ -58,7 +58,18 @@ app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
-  // Complete aqui
+  const {id} = req.query;
+  const {user} = req;
+  const done = true;
+
+  user.todo.filter((todo) => todo.id === id){
+    todo.done = done;
+    return res.status(201).json({message: "Tarefa concluída"})
+  }
+
+
+  
+
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
