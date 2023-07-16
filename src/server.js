@@ -113,9 +113,13 @@ app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
     return todo.id === id
   })
 
-  user.todo.splice(indexTodoToDelete, 1)
-
-  return res.status(201).json({message: "Tarefa removida com sucesso."})
+  if(indexTodoToDelete !== -1){
+    user.todo.splice(indexTodoToDelete, 1)
+    return res.status(201).json({message: "Tarefa removida com sucesso."});
+  }else{
+    return res.status(404).json({message: "Tarefa não encontrada"});
+  }
+  
 });
 
 export default app;
