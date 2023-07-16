@@ -99,7 +99,9 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
       updated = true;
     }
   }
-  return updated ? res.status(201).json({message: "Tarefa atualizada com sucesso"}) : '' 
+  return updated ? 
+  res.status(201).json({message: "Tarefa atualizada com sucesso"}) : 
+  res.status(404).json({message: "Tarefa não encontrada"}) 
 
 });
 
