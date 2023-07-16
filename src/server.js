@@ -57,18 +57,18 @@ app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
   // Complete aqui
 });
 
-app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
-  const {id} = req.query;
+app.patch('/todos/done', checksExistsUserAccount, (req, res) => {
+  const {id} = req.headers;
   const {user} = req;
-  const done = true;
+  let updated = false;
 
-  user.todo.filter((todo) => todo.id === id){
-    todo.done = done;
-    return res.status(201).json({message: "Tarefa concluída"})
+  for(let todo of user.todo){
+    if(todo.id === id){
+      todo.done = true;
+      updated = true;
+    }
   }
-
-
-  
+  return updated ? res.status(201).json({message: "Tarefa atualizada com sucesso"}) : '' 
 
 });
 
