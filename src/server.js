@@ -37,8 +37,12 @@ app.post('/users', (req, res) => {
     username,
     todo: []
   }
-  users.push(newUser);
-  return res.status(200).json({message: "Usuário cadastrado com sucesso."});
+  if(users.find((user) => user.username === newUser.username)){
+    return res.status(400).json({message: "Cliente já existe."})
+  }else{
+    users.push(newUser);
+    return res.status(201).json(newUser);
+  }
 });
 
 app.get('/todos', checksExistsUserAccount, (req, res) => {
