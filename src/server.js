@@ -20,6 +20,14 @@ function checksExistsUserAccount(req, res, next) {
   next();
 }
 
+function validateTitleToBeUpdated(title){
+  return title.length > 0 ? true : false;
+}
+
+function validateDeadlineToBeUpdated(deadline){
+  return deadline.length > 0 ? true : false;
+}
+
 app.post('/users', (req, res) => {
   const {name, username} = req.body;
 
@@ -54,7 +62,26 @@ app.post('/todos', checksExistsUserAccount, (req, res) => {
 });
 
 app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
-  // Complete aqui
+  const {user} = req;
+  const {id} = req.params;
+  const {title, deadline} = req.body;
+  const isContentTitleValid = validateTitleToBeUpdated(title);
+  const isContentDeadlineValid = validateDeadlineToBeUpdated(deadline);
+
+
+  for(let todo of user.todo){
+    if(todo.id === id){
+      if(isContentTitleValid){
+        todo.title = title
+      }
+      if(isContentDeadlineValid){
+        todo.deadline = deadline;
+      }
+      return res.status(201).json({message: "Tarefa atualizada com sucesso."});
+    }
+    return res.status(400).json({message: "Tarefa não encontrada"});
+  }
+
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
