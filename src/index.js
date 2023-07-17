@@ -1,9 +1,8 @@
 import express, { json } from 'express';
 import cors from 'cors';
-import {v4 as uuidv4} from 'uuid';
+import {v4 as uuidv4, validate} from 'uuid';
 
 const app = express();
-app.listen(3331);
 
 app.use(cors());
 app.use(json());
@@ -30,7 +29,19 @@ function checkCreateTodosUserAvailability(req, res, next){
 }
 
 function checkTodoExists(req, res, next){
+  const {id} = req.params;
+  const {user} = req;
+  if(!validate(id)){
+    return res.status(400).json({message: "id de tarefa inválido"});
+  }
 
+  const todo = user.todo.find((item) => item.id === id);
+  if(!todo){
+    return res.status(400).json({message: "Tarefa não pertence a esse usuário"});
+  }
+
+  req.todo = todo;
+  next();
 }
 
 function findUserById(req, res, next){
@@ -44,6 +55,11 @@ function validateTitleToBeUpdated(title){
 function validateDeadlineToBeUpdated(deadline){
   return deadline.length > 0 ? true : false;
 }
+
+app.get('/todos', checksExistsUserAccount, (req, res) => {
+  const {user} = req;
+  return res.status(200).json(user.todo);
+});
 
 app.post('/users', (req, res) => {
   const {name, username} = req.body;
@@ -63,11 +79,6 @@ app.post('/users', (req, res) => {
   }
 });
 
-app.get('/todos', checksExistsUserAccount, (req, res) => {
-  const {user} = req;
-  return res.status(200).json(user.todo);
-});
-
 app.post('/todos', checksExistsUserAccount, checkCreateTodosUserAvailability, (req, res) => {
   const {user} = req;
   const { title, deadline } = req.body;
@@ -83,27 +94,13 @@ app.post('/todos', checksExistsUserAccount, checkCreateTodosUserAvailability, (r
   return res.status(201).json({message: 'Tarefa cadastrada com sucesso.'})
 });
 
-app.put('/todos/:id', checksExistsUserAccount, (req, res) => {
-  const {user} = req;
-  const {id} = req.params;
+app.put('/todos/:id', checksExistsUserAccount, checkTodoExists, (req, res) => {
+  const {todo} = req;
   const {title, deadline} = req.body;
-  const isContentTitleValid = validateTitleToBeUpdated(title);
-  const isContentDeadlineValid = validateDeadlineToBeUpdated(deadline);
 
-
-  for(let todo of user.todo){
-    if(todo.id === id){
-      if(isContentTitleValid){
-        todo.title = title
-      }
-      if(isContentDeadlineValid){
-        todo.deadline = deadline;
-      }
-      return res.status(201).json({message: "Tarefa atualizada com sucesso."});
-    }
-    return res.status(400).json({message: "Tarefa não encontrada"});
-  }
-
+  todo.title = title;
+  todo.deadline = new Date(deadline);
+  return res.json(todo);
 });
 
 app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
@@ -118,9 +115,8 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
     }
   }
   return updated ? 
-  res.status(201).json({message: "Tarefa atualizada com sucesso"}) : 
-  res.status(404).json({message: "Tarefa não encontrada"}) 
-
+    res.status(201).json({message: "Tarefa atualizada com sucesso"}) : 
+    res.status(404).json({message: "Tarefa não encontrada"}) 
 });
 
 app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
@@ -136,8 +132,7 @@ app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
     return res.status(201).json({message: "Tarefa removida com sucesso."});
   }else{
     return res.status(404).json({message: "Tarefa não encontrada"});
-  }
-  
+  }  
 });
 
 export default app;
