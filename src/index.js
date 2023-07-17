@@ -37,7 +37,7 @@ function checkTodoExists(req, res, next){
 
   const todo = user.todo.find((item) => item.id === id);
   if(!todo){
-    return res.status(400).json({message: "Tarefa não pertence a esse usuário"});
+    return res.status(40).json({message: "Tarefa não pertence a esse usuário"});
   }
 
   req.todo = todo;
@@ -45,20 +45,25 @@ function checkTodoExists(req, res, next){
 }
 
 function findUserById(req, res, next){
+  const {id} = req.params;
 
-}
+  const user = users.find((item) => item.id === id);
+  if(!user){
+    return res.status(404).json({message: "Cliente não encontrado."})
+  }
+  req.user = user;
+  next();
 
-function validateTitleToBeUpdated(title){
-  return title.length > 0 ? true : false;
-}
-
-function validateDeadlineToBeUpdated(deadline){
-  return deadline.length > 0 ? true : false;
 }
 
 app.get('/todos', checksExistsUserAccount, (req, res) => {
   const {user} = req;
   return res.status(200).json(user.todo);
+});
+
+app.get('/users/:id', findUserById, (req, res) => {
+  const {user} = req;
+  res.status(200).json({user});
 });
 
 app.post('/users', (req, res) => {
