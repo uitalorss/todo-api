@@ -32,12 +32,12 @@ function checkTodoExists(req, res, next){
   const {id} = req.params;
   const {user} = req;
   if(!validate(id)){
-    return res.status(400).json({message: "id de tarefa inválido"});
+    return res.status(404).json({message: "id de tarefa inválido"});
   }
 
   const todo = user.todo.find((item) => item.id === id);
   if(!todo){
-    return res.status(40).json({message: "Tarefa não pertence a esse usuário"});
+    return res.status(404).json({message: "Tarefa não pertence a esse usuário"});
   }
 
   req.todo = todo;
@@ -108,20 +108,11 @@ app.put('/todos/:id', checksExistsUserAccount, checkTodoExists, (req, res) => {
   return res.json(todo);
 });
 
-app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
-  const {id} = req.params;
-  const {user} = req;
-  let updated = false;
+app.patch('/todos/:id/done', checksExistsUserAccount, checkTodoExists, (req, res) => {
+  const {todo} = req;
 
-  for(let todo of user.todo){
-    if(todo.id === id){
-      todo.done = true;
-      updated = true;
-    }
-  }
-  return updated ? 
-    res.status(201).json({message: "Tarefa atualizada com sucesso"}) : 
-    res.status(404).json({message: "Tarefa não encontrada"}) 
+  todo.done = true;
+  return res.status(201).json({message: "Tarefa atualizada com sucesso"});
 });
 
 app.patch('/users/:id/pro', findUserById, (req, res) => {
@@ -134,20 +125,15 @@ app.patch('/users/:id/pro', findUserById, (req, res) => {
   res.status(201).json({message: "usuário atualizado com sucesso."});
 });
 
-app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
-  const {id} = req.params;
-  const {user} = req;
+app.delete('/todos/:id', checksExistsUserAccount, checkTodoExists, (req, res) => {
+  const {user, todo} = req;
 
-  const indexTodoToDelete = user.todo.findIndex((todo) => {
-    return todo.id === id
+  const indexTodoToDelete = user.todo.findIndex((item) => {
+    return item.id === todo.id
   })
 
-  if(indexTodoToDelete !== -1){
-    user.todo.splice(indexTodoToDelete, 1)
-    return res.status(201).json({message: "Tarefa removida com sucesso."});
-  }else{
-    return res.status(404).json({message: "Tarefa não encontrada"});
-  }  
+  user.todo.splice(indexTodoToDelete, 1)
+  return res.status(201).json({message: "Tarefa removida com sucesso."});
 });
 
 export default app;
