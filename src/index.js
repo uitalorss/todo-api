@@ -124,6 +124,16 @@ app.patch('/todos/:id/done', checksExistsUserAccount, (req, res) => {
     res.status(404).json({message: "Tarefa não encontrada"}) 
 });
 
+app.patch('/users/:id/pro', findUserById, (req, res) => {
+  const {user} = req;
+
+  if(user.pro){
+    return res.status(400).json({message: "Plano pro já ativado"});
+  }
+  user.pro = true;
+  res.status(201).json({message: "usuário atualizado com sucesso."});
+});
+
 app.delete('/todos/:id', checksExistsUserAccount, (req, res) => {
   const {id} = req.params;
   const {user} = req;
